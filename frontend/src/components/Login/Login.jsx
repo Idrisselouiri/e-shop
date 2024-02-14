@@ -14,7 +14,7 @@ const Login = () => {
         <h1 className="py-5 text-center text-3xl font-bold">
           Login to your account
         </h1>
-        <form onSubmit={handleSubmit} className={`${styles.form}`}>
+        <form className={`${styles.form}`}>
           <div>
             <label htmlFor="email">Email address</label>
             <input
