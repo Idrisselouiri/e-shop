@@ -5,7 +5,9 @@ import { Link, useNavigate } from "react-router-dom";
 const Login = () => {
   const [formData, setFormData] = useState({});
   const navigate = useNavigate();
-
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
   return (
     <section
       className={`${styles.normalFlex} justify-center h-screen w-full bg-slate-100 mt-16`}

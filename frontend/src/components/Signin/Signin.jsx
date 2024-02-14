@@ -32,7 +32,7 @@ const Signin = () => {
       navigate("/login");
     } catch (error) {
       setLoading(false);
-      setError(error);
+      setError(error.message);
     }
   };
   return (
