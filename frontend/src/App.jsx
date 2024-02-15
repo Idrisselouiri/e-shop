@@ -12,8 +12,10 @@ import RootLayout from "./layouts/RootLayout.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path="/" element={<RootLayout />}>
-      <Route index element={<Home />} />
+    <Route>
+      <Route path="/" element={<RootLayout />}>
+        <Route index element={<Home />} />
+      </Route>
       <Route path="signin" element={<Signin />} />
       <Route path="login" element={<Login />} />
     </Route>
