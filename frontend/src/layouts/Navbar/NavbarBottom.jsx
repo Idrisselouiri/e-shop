@@ -8,10 +8,11 @@ import { IoIosArrowDown } from "react-icons/io";
 import DropDown from "./DropDown";
 import { NavLink } from "react-router-dom";
 import styles from "../../style/style";
+import { useSelector } from "react-redux";
 
 const NavbarBottom = () => {
   const [dropDown, setDropDown] = useState(false);
-
+  const { currentUser } = useSelector((state) => state.user);
   return (
     <nav
       className={`${styles.FlexSection} shadow-xl shadow-slate-200 bg-slate-100 px-5`}
@@ -54,9 +55,19 @@ const NavbarBottom = () => {
       </ul>
       <div className={`${styles.normalFlex} gap-3`}>
         <div className=" cursor-pointer">
-          <NavLink className={`${styles.normalFlex} gap-2`} to={"/signin"}>
-            <p className="font-medium text-[18px]">Singin</p>
-            <CgProfile size={30} className="rgb(255 255 255 / 83%" />
+          <NavLink className={`${styles.normalFlex} gap-2`} to={"/profile"}>
+            {currentUser ? (
+              <img
+                src={currentUser.avatar}
+                className="h-7 w-7 rounded-full"
+                alt="avatar"
+              />
+            ) : (
+              <>
+                <CgProfile size={30} className="rgb(255 255 255 / 83%" />
+                <p className="font-medium text-[18px]">Singin</p>
+              </>
+            )}
           </NavLink>
         </div>
         <div className="relative cursor-pointer">

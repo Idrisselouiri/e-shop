@@ -9,6 +9,8 @@ import {
 import { Home, Login, Signin } from "./routes/Route.js";
 //layouts
 import RootLayout from "./layouts/RootLayout.jsx";
+import PrivateRoute from "./components/PrivateRoute.jsx";
+import Profile from "./pages/profile/Profile.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -16,8 +18,11 @@ const router = createBrowserRouter(
       <Route path="/" element={<RootLayout />}>
         <Route index element={<Home />} />
       </Route>
-      <Route path="signin" element={<Signin />} />
-      <Route path="login" element={<Login />} />
+      <Route path="/signin" element={<Signin />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/profile" element={<PrivateRoute />}>
+        <Route index element={<Profile />} />
+      </Route>
     </Route>
   )
 );
