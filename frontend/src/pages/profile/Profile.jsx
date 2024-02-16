@@ -11,6 +11,9 @@ import {
   updateUserStart,
   updateUserSuccess,
   updateUserFailure,
+  deleteUserStart,
+  deleteUserSuccess,
+  deleteUserFailure,
 } from "../../redux/user/userSlice.js";
 import { app } from "../../firebase.js";
 import styles from "../../style/style";
@@ -57,7 +60,7 @@ const Profile = () => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
-  const handleSubmit = async (e) => {
+  const updateUser = async (e) => {
     e.preventDefault();
     try {
       dispatch(updateUserStart());
@@ -73,6 +76,24 @@ const Profile = () => {
       }
       dispatch(updateUserSuccess(data));
       navigate("/");
+    } catch (error) {
+      dispatch(updateUserFailure(error.message));
+    }
+  };
+  const deleteUser = async (e) => {
+    e.preventDefault();
+    try {
+      dispatch(deleteUserStart());
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: "Delete",
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(deleteUserFailure(data.message));
+        return;
+      }
+      dispatch(deleteUserSuccess(data));
+      navigate("/signin");
     } catch (error) {
       dispatch(updateUserFailure(error.message));
     }
@@ -114,7 +135,7 @@ const Profile = () => {
             )}
           </p>
         </div>
-        <form onSubmit={handleSubmit} className={`${styles.form}`}>
+        <form onSubmit={updateUser} className={`${styles.form}`}>
           <div>
             <label htmlFor="username">User Name</label>
             <input
@@ -152,8 +173,8 @@ const Profile = () => {
             Update
           </button>
           <div className={`${styles.FlexSection}`}>
-            <p>Delete Account</p>
-            <p>Sign Out</p>
+            <button onClick={deleteUser}>Delete Account</button>
+            <button>Sign Out</button>
           </div>
         </form>
       </div>
