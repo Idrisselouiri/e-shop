@@ -23,6 +23,7 @@ const Profile = () => {
   const [filePres, setFilePres] = useState(0);
   const [fileUploadError, setFileUploadError] = useState(false);
   const [formData, setFormData] = useState({});
+  const [updateSuccess, setUpdateSuccess] = useState(false);
   const { currentUser, loading, error } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -75,13 +76,12 @@ const Profile = () => {
         return;
       }
       dispatch(updateUserSuccess(data));
-      navigate("/");
+      setUpdateSuccess(true);
     } catch (error) {
       dispatch(updateUserFailure(error.message));
     }
   };
-  const deleteUser = async (e) => {
-    e.preventDefault();
+  const deleteUser = async () => {
     try {
       dispatch(deleteUserStart());
       const res = await fetch(`/api/user/delete/${currentUser._id}`, {
@@ -93,9 +93,22 @@ const Profile = () => {
         return;
       }
       dispatch(deleteUserSuccess(data));
-      navigate("/signin");
     } catch (error) {
       dispatch(updateUserFailure(error.message));
+    }
+  };
+  const signoutUser = async () => {
+    try {
+      dispatch(deleteUserStart());
+      const res = await fetch("/api/auth/signout");
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(deleteUserFailure(data.message));
+        return;
+      }
+      dispatch(deleteUserSuccess(data));
+    } catch (error) {
+      dispatch(deleteUserFailure(error.message));
     }
   };
 
@@ -167,15 +180,20 @@ const Profile = () => {
             />
           </div>
           <button
+            disabled={loading}
             className="py-2 bg-blue-600 text-white text-[18px] rounded-md mt-3 mb-3"
             type="submit"
           >
-            Update
+            {loading ? "Loading..." : "Update"}
           </button>
           <div className={`${styles.FlexSection}`}>
             <button onClick={deleteUser}>Delete Account</button>
-            <button>Sign Out</button>
+            <button onClick={signoutUser}>Sign Out</button>
           </div>
+          <p className="text-red-700 mt-5">{error ? error : ""}</p>
+          <p className="text-green-700 mt-5">
+            {updateSuccess ? "User is updated successfully!" : ""}
+          </p>
         </form>
       </div>
     </section>
