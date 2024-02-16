@@ -1,12 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import {
   getDownloadURL,
   getStorage,
   ref,
   uploadBytesResumable,
 } from "firebase/storage";
+import {
+  updateUserStart,
+  updateUserSuccess,
+  updateUserFailure,
+} from "../../redux/user/userSlice.js";
 import { app } from "../../firebase.js";
 import styles from "../../style/style";
 
@@ -15,9 +20,12 @@ const Profile = () => {
   const [filePres, setFilePres] = useState(0);
   const [fileUploadError, setFileUploadError] = useState(false);
   const [formData, setFormData] = useState({});
-  const { currentUser } = useSelector((state) => state.user);
+  const { currentUser, loading, error } = useSelector((state) => state.user);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const inputRef = useRef(null);
 
+  console.log(formData);
   useEffect(() => {
     if (file) {
       uploadFile(file);
@@ -46,6 +54,29 @@ const Profile = () => {
       }
     );
   };
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      dispatch(updateUserStart());
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(updateUserFailure(data.message));
+        return;
+      }
+      dispatch(updateUserSuccess(data));
+      navigate("/");
+    } catch (error) {
+      dispatch(updateUserFailure(error.message));
+    }
+  };
 
   return (
     <section
@@ -62,7 +93,7 @@ const Profile = () => {
             className="hidden"
           />
           <img
-            src={currentUser.avatar}
+            src={formData.avatar || currentUser.avatar}
             alt="avatar"
             className="w-20 h-20 rounded-full"
             onClick={() => inputRef.current.click()}
@@ -83,21 +114,35 @@ const Profile = () => {
             )}
           </p>
         </div>
-        <form className={`${styles.form}`}>
+        <form onSubmit={handleSubmit} className={`${styles.form}`}>
           <div>
             <label htmlFor="username">User Name</label>
-            <input type="text" className={`${styles.input}`} id="username" />
+            <input
+              onChange={handleChange}
+              type="text"
+              className={`${styles.input}`}
+              id="username"
+              defaultValue={currentUser.username}
+            />
           </div>
           <div className="mt-2">
             <label htmlFor="email">Email address</label>
-            <input type="text" className={`${styles.input}`} id="email" />
+            <input
+              onChange={handleChange}
+              type="text"
+              className={`${styles.input}`}
+              id="email"
+              defaultValue={currentUser.email}
+            />
           </div>
           <div className="mt-2">
             <label htmlFor="password">Password </label>
             <input
+              onChange={handleChange}
               type="password"
               className={`${styles.input} appearance-none`}
               id="password"
+              defaultValue={currentUser.password}
             />
           </div>
           <button
