@@ -20,14 +20,16 @@ import styles from "../../style/style";
 
 const Profile = () => {
   const [file, setFile] = useState(undefined);
-  const [filePres, setFilePres] = useState(0);
+  const [filePerc, setFilePerc] = useState(0);
   const [fileUploadError, setFileUploadError] = useState(false);
   const [formData, setFormData] = useState({});
   const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [listingsData, setListingsData] = useState(null);
+  const [errorListing, setErrorListing] = useState(false);
   const { currentUser, loading, error } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const inputRef = useRef(null);
+  const fileRef = useRef(null);
 
   console.log(formData);
   useEffect(() => {
@@ -46,7 +48,7 @@ const Profile = () => {
       (snapshot) => {
         const progress =
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setFilePres(Math.round(progress));
+        setFilePerc(Math.round(progress));
       },
       (error) => {
         setFileUploadError(true);
@@ -61,7 +63,7 @@ const Profile = () => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
-  const handleUpdateUser = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       dispatch(updateUserStart());
@@ -81,7 +83,7 @@ const Profile = () => {
       dispatch(updateUserFailure(error.message));
     }
   };
-  const deleteUser = async () => {
+  const handleDeleteUser = async () => {
     try {
       dispatch(deleteUserStart());
       const res = await fetch(`/api/user/delete/${currentUser._id}`, {
@@ -97,7 +99,7 @@ const Profile = () => {
       dispatch(updateUserFailure(error.message));
     }
   };
-  const signoutUser = async () => {
+  const handleSignOut = async () => {
     try {
       dispatch(deleteUserStart());
       const res = await fetch("/api/auth/signout");
@@ -111,99 +113,168 @@ const Profile = () => {
       dispatch(deleteUserFailure(error.message));
     }
   };
+  const handleshowListing = async () => {
+    try {
+      setErrorListing(false);
+      const res = await fetch(`api/listing/getListings/${currentUser._id}`);
+      const data = await res.json();
+      setListingsData(data);
+      if (data.success === false) {
+        setShowListingsError(true);
+        return;
+      }
+      setErrorListing(false);
+    } catch (error) {
+      setErrorListing(error.message);
+    }
+  };
 
+  const handleDeleteListing = async (listingId) => {
+    try {
+      const res = await fetch(`/api/listing/deleteListing/${listingId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        console.log(data.message);
+        return;
+      }
+      setListingsData((prev) =>
+        prev.filter((listing) => listing._id !== listingId)
+      );
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
   return (
-    <section
-      className={`${styles.normalFlex} justify-center min-h-screen w-full bg-slate-100`}
-    >
-      <div className="w-2/5">
-        <h1 className="py-3 text-center text-3xl font-bold">Profile</h1>
-        <div className={`${styles.normalFlex} justify-center flex-col mb-2`}>
-          <input
-            type="file"
-            onChange={(e) => setFile(e.target.files[0])}
-            ref={inputRef}
-            accept="image/*"
-            className="hidden"
-          />
-          <img
-            src={formData.avatar || currentUser.avatar}
-            alt="avatar"
-            className="w-20 h-20 rounded-full"
-            onClick={() => inputRef.current.click()}
-          />
-          <p>
-            {fileUploadError ? (
-              <span className="text-red-700 font-medium">
-                Error Image upload (image must be less than 2 mb)
-              </span>
-            ) : filePres > 0 && filePres < 100 ? (
-              <span className="text-slate-700 font-medium">{`Uploading ${filePres}%`}</span>
-            ) : filePres === 100 ? (
-              <span className="text-green-700 font-medium">
-                Image successfully uploaded!
-              </span>
-            ) : (
-              ""
-            )}
-          </p>
-        </div>
-        <form onSubmit={handleUpdateUser} className={`${styles.form}`}>
-          <div>
-            <label htmlFor="username">User Name</label>
-            <input
-              onChange={handleChange}
-              type="text"
-              className={`${styles.input}`}
-              id="username"
-              defaultValue={currentUser.username}
-            />
-          </div>
-          <div className="mt-2">
-            <label htmlFor="email">Email address</label>
-            <input
-              onChange={handleChange}
-              type="text"
-              className={`${styles.input}`}
-              id="email"
-              defaultValue={currentUser.email}
-            />
-          </div>
-          <div className="mt-2">
-            <label htmlFor="password">Password </label>
-            <input
-              onChange={handleChange}
-              type="password"
-              className={`${styles.input} appearance-none`}
-              id="password"
-              defaultValue={currentUser.password}
-            />
-          </div>
-          <button
-            disabled={loading}
-            className="py-2 bg-blue-600 text-white text-[18px] rounded-md mt-3 mb-3"
-            type="submit"
-          >
-            {loading ? "Loading..." : "Update"}
-          </button>
-          <button
-            disabled={loading}
-            className="py-2 bg-green-600 text-white text-[18px] rounded-md  mb-3"
-            type="submit"
-          >
-            <Link to={"/create-listing"}> Create Listing</Link>
-          </button>
-          <div className={`${styles.FlexSection}`}>
-            <button onClick={deleteUser}>Delete Account</button>
-            <button onClick={signoutUser}>Sign Out</button>
-          </div>
-          <p className="text-red-700 mt-5">{error ? error : ""}</p>
-          <p className="text-green-700">
-            {updateSuccess ? "User is updated successfully!" : ""}
-          </p>
-        </form>
+    <div className="p-3 max-w-lg mx-auto">
+      <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 ">
+        <input
+          onChange={(e) => setFile(e.target.files[0])}
+          type="file"
+          ref={fileRef}
+          hidden
+          accept="image/*"
+        />
+        <img
+          onClick={() => fileRef.current.click()}
+          src={formData.avatar || currentUser.avatar}
+          alt="profile"
+          className="rounded-full h-24 w-24 object-cover cursor-pointer self-center mt-2"
+        />
+        <p className="text-sm self-center">
+          {fileUploadError ? (
+            <span className="text-red-700">
+              Error Image upload (image must be less than 2 mb)
+            </span>
+          ) : filePerc > 0 && filePerc < 100 ? (
+            <span className="text-slate-700">{`Uploading ${filePerc}%`}</span>
+          ) : filePerc === 100 ? (
+            <span className="text-green-700">Image successfully uploaded!</span>
+          ) : (
+            ""
+          )}
+        </p>
+        <input
+          type="text"
+          placeholder="username"
+          defaultValue={currentUser.username}
+          id="username"
+          className="border p-3 rounded-lg"
+          onChange={handleChange}
+        />
+        <input
+          type="email"
+          placeholder="email"
+          id="email"
+          defaultValue={currentUser.email}
+          className="border p-3 rounded-lg"
+          onChange={handleChange}
+        />
+        <input
+          type="password"
+          placeholder="password"
+          onChange={handleChange}
+          id="password"
+          className="border p-3 rounded-lg"
+        />
+        <button
+          disabled={loading}
+          className="bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80"
+        >
+          {loading ? "Loading..." : "Update"}
+        </button>
+        <Link
+          className="bg-green-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95"
+          to={"/create-listing"}
+        >
+          Create Listing
+        </Link>
+      </form>
+      <div className="flex justify-between mt-5">
+        <span
+          onClick={handleDeleteUser}
+          className="text-red-700 cursor-pointer"
+        >
+          Delete account
+        </span>
+        <span onClick={handleSignOut} className="text-red-700 cursor-pointer">
+          Sign out
+        </span>
       </div>
-    </section>
+
+      <p className="text-red-700 mt-5">{error ? error : ""}</p>
+      <p className="text-green-700 mt-5">
+        {updateSuccess ? "User is updated successfully!" : ""}
+      </p>
+      <button onClick={handleshowListing} className="text-green-700 w-full">
+        Show Listings
+      </button>
+      <p className="text-red-700 mt-5">
+        {errorListing ? "Error showing listings" : ""}
+      </p>
+
+      {listingsData && listingsData.length > 0 && (
+        <div className="flex flex-col gap-4">
+          <h1 className="text-center mt-7 text-2xl font-semibold">
+            Your Listings
+          </h1>
+          {listingsData.map((listing) => (
+            <div
+              key={listing._id}
+              className="border rounded-lg p-3 flex justify-between items-center gap-4"
+            >
+              <Link to={`/listing/${listing._id}`}>
+                <img
+                  src={listing.imageUrls[0]}
+                  alt="listing cover"
+                  className="h-16 w-16 object-contain"
+                />
+              </Link>
+              <Link
+                className="text-slate-700 font-semibold  hover:underline truncate flex-1"
+                to={`/listing/${listing._id}`}
+              >
+                <p>{listing.name}</p>
+              </Link>
+
+              <div className="flex flex-col item-center">
+                <button
+                  onClick={() => handleDeleteListing(listing._id)}
+                  className="text-red-700 uppercase"
+                >
+                  Delete
+                </button>
+                <Link to={`/update-listing/${listing._id}`}>
+                  <button className="text-green-700 uppercase">Edit</button>
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 

@@ -14,13 +14,13 @@ const userSlice = createSlice({
       state.loading = true;
     },
     signinSuccess: (state, action) => {
+      state.currentUser = action.payload;
       state.loading = false;
       state.error = null;
-      state.currentUser = action.payload;
     },
     signinFailure: (state, action) => {
-      state.loading = false;
       state.error = action.payload;
+      state.loading = false;
     },
     updateUserStart: (state) => {
       state.loading = true;

@@ -6,7 +6,14 @@ import {
   RouterProvider,
 } from "react-router-dom";
 //pages
-import { Home, Login, Signin, CreateListing } from "./routes/Route.js";
+import {
+  Home,
+  Login,
+  Signin,
+  CreateListing,
+  UpdateListing,
+  Listing,
+} from "./routes/Route.js";
 //layouts
 import RootLayout from "./layouts/RootLayout.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
@@ -20,10 +27,12 @@ const router = createBrowserRouter(
       </Route>
       <Route path="/signin" element={<Signin />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/profile" element={<PrivateRoute />}>
-        <Route index element={<Profile />} />
+      <Route path="/listing/:id" element={<Listing />} />
+      <Route element={<PrivateRoute />}>
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/create-listing" element={<CreateListing />} />
+        <Route path="/update-listing/:listingId" element={<UpdateListing />} />
       </Route>
-      <Route path="/create-listing" element={<CreateListing />} />
     </Route>
   )
 );

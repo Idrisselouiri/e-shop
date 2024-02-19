@@ -38,7 +38,7 @@ const Signin = () => {
   };
   return (
     <section
-      className={`${styles.normalFlex} justify-center min-h-screen w-full bg-slate-100`}
+      className={`${styles.normalFlex} justify-center min-h-screen w-full`}
     >
       <div className="w-2/5">
         <h1 className="py-3 text-center text-3xl font-bold">

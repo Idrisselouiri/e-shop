@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   getDownloadURL,
   getStorage,
@@ -7,11 +7,12 @@ import {
 } from "firebase/storage";
 import { app } from "../../firebase";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-const CreateListing = () => {
+const UpdateListing = () => {
   const { currentUser } = useSelector((state) => state.user);
   const [files, setFiles] = useState([]);
+  const params = useParams();
   const [uploading, setuploading] = useState(false);
   const [errorImage, setErrorImage] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -30,9 +31,21 @@ const CreateListing = () => {
     parking: false,
     furnished: false,
   });
-  console.log(formData);
-
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const listingId = params.listingId;
+    const fetchListing = async () => {
+      const res = await fetch(`/api/listing/getListing/${listingId}`);
+      const data = await res.json();
+      if (data.success === false) {
+        console.log(data.message);
+        return;
+      }
+      setFormData(data);
+    };
+    fetchListing();
+  }, []);
   const handleSubmitImages = () => {
     if (files.length > 0 && files.length + formData.imageUrls.length < 6) {
       setuploading(true);
@@ -109,20 +122,20 @@ const CreateListing = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (formData.imageUrls.length < 1) {
+      if (formData.imageUrls.length < 1)
         return setError("You must upload at least one image");
-      }
-      if (+formData.regularPrice < +formData.discountPrice) {
+      if (+formData.regularPrice < +formData.discountPrice)
         return setError("Discount price must be lower than regular price");
-      }
       setLoading(true);
       setError(null);
-
-      const res = await fetch("/api/listing/createListing", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, userRef: currentUser._id }),
-      });
+      const res = await fetch(
+        `/api/listing/updateListing/${params.listingId}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...formData, userRef: currentUser._id }),
+        }
+      );
       const data = await res.json();
       if (data.success === false) {
         setError(data.message);
@@ -131,15 +144,15 @@ const CreateListing = () => {
       setError(null);
       navigate(`/listing/${data._id}`);
     } catch (error) {
-      setError(error.message);
       setLoading(false);
+      setError(error.message);
     }
   };
 
   return (
     <main className="p-3 max-w-4xl mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">
-        Create a Listing
+        Update a Listing
       </h1>
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
         <div className="flex flex-col gap-4 flex-1">
@@ -310,9 +323,7 @@ const CreateListing = () => {
               {uploading ? "uploading" : "upload"}
             </button>
           </div>
-          <p className="text-red-600 font-medium text-md">
-            {errorImage ? errorImage : ""}
-          </p>
+          <p className="text-red-600">{errorImage ? errorImage : ""}</p>
 
           {formData.imageUrls.length > 0 &&
             formData.imageUrls.map((imgUrl, i) => (
@@ -332,7 +343,7 @@ const CreateListing = () => {
             className="p-3 bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 disabled:opacity-80"
             disabled={uploading || loading}
           >
-            {loading ? "CREATING" : "CREATE"}
+            {loading ? "UPDATING" : "UPDATE"}
           </button>
           {error && <p className="text-red-600 text-md font-medium">{error}</p>}
         </div>
@@ -341,4 +352,4 @@ const CreateListing = () => {
   );
 };
 
-export default CreateListing;
+export default UpdateListing;

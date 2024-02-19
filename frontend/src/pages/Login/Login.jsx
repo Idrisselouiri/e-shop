@@ -39,9 +39,7 @@ const Login = () => {
     }
   };
   return (
-    <section
-      className={`${styles.normalFlex} justify-center h-screen w-full bg-slate-100 `}
-    >
+    <section className={`${styles.normalFlex} justify-center h-screen w-full `}>
       <div className="w-2/5">
         <h1 className="py-5 text-center text-3xl font-bold">
           Login to your account
