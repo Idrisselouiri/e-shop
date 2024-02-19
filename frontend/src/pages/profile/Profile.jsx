@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
   getDownloadURL,
@@ -61,7 +61,7 @@ const Profile = () => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
-  const updateUser = async (e) => {
+  const handleUpdateUser = async (e) => {
     e.preventDefault();
     try {
       dispatch(updateUserStart());
@@ -118,7 +118,7 @@ const Profile = () => {
     >
       <div className="w-2/5">
         <h1 className="py-3 text-center text-3xl font-bold">Profile</h1>
-        <div className={`${styles.normalFlex} justify-center mb-2`}>
+        <div className={`${styles.normalFlex} justify-center flex-col mb-2`}>
           <input
             type="file"
             onChange={(e) => setFile(e.target.files[0])}
@@ -134,13 +134,13 @@ const Profile = () => {
           />
           <p>
             {fileUploadError ? (
-              <span className="text-red-700">
+              <span className="text-red-700 font-medium">
                 Error Image upload (image must be less than 2 mb)
               </span>
             ) : filePres > 0 && filePres < 100 ? (
-              <span className="text-slate-700">{`Uploading ${filePres}%`}</span>
+              <span className="text-slate-700 font-medium">{`Uploading ${filePres}%`}</span>
             ) : filePres === 100 ? (
-              <span className="text-green-700">
+              <span className="text-green-700 font-medium">
                 Image successfully uploaded!
               </span>
             ) : (
@@ -148,7 +148,7 @@ const Profile = () => {
             )}
           </p>
         </div>
-        <form onSubmit={updateUser} className={`${styles.form}`}>
+        <form onSubmit={handleUpdateUser} className={`${styles.form}`}>
           <div>
             <label htmlFor="username">User Name</label>
             <input
@@ -186,12 +186,19 @@ const Profile = () => {
           >
             {loading ? "Loading..." : "Update"}
           </button>
+          <button
+            disabled={loading}
+            className="py-2 bg-green-600 text-white text-[18px] rounded-md  mb-3"
+            type="submit"
+          >
+            <Link to={"/create-listing"}> Create Listing</Link>
+          </button>
           <div className={`${styles.FlexSection}`}>
             <button onClick={deleteUser}>Delete Account</button>
             <button onClick={signoutUser}>Sign Out</button>
           </div>
           <p className="text-red-700 mt-5">{error ? error : ""}</p>
-          <p className="text-green-700 mt-5">
+          <p className="text-green-700">
             {updateSuccess ? "User is updated successfully!" : ""}
           </p>
         </form>

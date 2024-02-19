@@ -6,7 +6,7 @@ import {
   RouterProvider,
 } from "react-router-dom";
 //pages
-import { Home, Login, Signin } from "./routes/Route.js";
+import { Home, Login, Signin, CreateListing } from "./routes/Route.js";
 //layouts
 import RootLayout from "./layouts/RootLayout.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
@@ -23,6 +23,7 @@ const router = createBrowserRouter(
       <Route path="/profile" element={<PrivateRoute />}>
         <Route index element={<Profile />} />
       </Route>
+      <Route path="/create-listing" element={<CreateListing />} />
     </Route>
   )
 );

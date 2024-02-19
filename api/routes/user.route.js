@@ -1,6 +1,10 @@
 import express from "express";
 import { verifyUser } from "../utils/verifyUser.js";
-import { deleteUser, updateUser } from "../controller/controller.user.js";
+import {
+  deleteUser,
+  listingUser,
+  updateUser,
+} from "../controller/controller.user.js";
 
 const router = express.Router();
 
