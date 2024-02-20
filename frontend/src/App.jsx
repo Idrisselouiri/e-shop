@@ -27,7 +27,7 @@ const router = createBrowserRouter(
       </Route>
       <Route path="/signin" element={<Signin />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/listing/:id" element={<Listing />} />
+      <Route path="/listing/:listingId" element={<Listing />} />
       <Route element={<PrivateRoute />}>
         <Route path="/profile" element={<Profile />} />
         <Route path="/create-listing" element={<CreateListing />} />
